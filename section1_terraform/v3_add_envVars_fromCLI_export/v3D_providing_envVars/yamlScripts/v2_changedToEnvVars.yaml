@@ -1,0 +1,31 @@
+#cloud-config
+groups:
+  - ubuntu: [root, sys]
+
+users:
+  - default
+  - name: ${LINUX_USER_DEVOPS_1A}
+    gecos: ${LINUX_USER_DEVOPS_1A}
+    shell: /bin/bash
+    primary_group: ${LINUX_USER_DEVOPS_1A}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin, docker
+    lock_passwd: false
+    ssh_authorized_keys:
+      - ${LINUX_SSH_KEY_1A}
+
+runcmd:
+  - sudo apt-get -y update
+  - sudo apt -y install apt-transport-https ca-certificates curl
+    software-properties-common net-tools
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64]
+    https://download.docker.com/linux/ubuntu jammy stable"
+  - sudo apt -y update
+  - sudo apt-cache policy docker-ce && apt-get -y install docker-ce
+  - sudo usermod -aG docker ${LINUX_USER_DEVOPS_1A}
+  - sudo curl -SL
+    https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-linux-x86_64
+    -o /usr/local/bin/docker-compose
+  - sudo chmod +x /usr/local/bin/docker-compose
+  - sudo apt -y install gh

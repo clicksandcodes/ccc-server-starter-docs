@@ -1,0 +1,31 @@
+# This version is copied straight from #cloud-config section of v3 tf file.
+# For the next version (v1), I simply passed the below code (minus the secrets-- ssh key) via this validator: https://www.yamllint.com/
+
+groups:
+  - ubuntu: [root,sys]
+# Add users to the system. Users are added after groups are added.
+users:
+  - default
+  - name: yourChosenUserNameForLinuxServerLogin
+    gecos: yourChosenUserNameForLinuxServerLogin
+    shell: /bin/bash
+    primary_group: yourChosenUserNameForLinuxServerLogin
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin, docker
+    lock_passwd: false
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAA_yourSSH_key__6U13+ your@email.com
+
+runcmd:
+  - sudo apt-get -y update
+  - sudo apt -y install apt-transport-https ca-certificates curl software-properties-common net-tools
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable"
+  - sudo apt -y update
+  - sudo apt-cache policy docker-ce && apt-get -y install docker-ce
+  - sudo usermod -aG docker yourChosenUserNameForLinuxServerLogin
+  # install docker-compose
+  - sudo curl -SL https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+  - sudo chmod +x /usr/local/bin/docker-compose
+  # install gh for github auth via CLI
+  - sudo apt -y install gh
